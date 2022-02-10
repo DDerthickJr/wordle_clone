@@ -6,29 +6,28 @@ import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.PlainDocument;
 import java.awt.*;
-import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
 public class WordleFrame extends JFrame {
 
     private JTextField[][] wordMap;
-    private JPanel wordPanel;
-    private JPanel controlPanel;
     private JTextField inputField;
     private JButton submitButton;
     private JButton restartButton;
     private int line;
     private String word;
     private List<String> words;
+    private List<String> usedWords;
 
     public WordleFrame(){
         initComponents();
         line = 0;
+        usedWords = new ArrayList<>();
 
         inputField.setDocument(new PlainDocument(){
             @Override
@@ -62,7 +61,41 @@ public class WordleFrame extends JFrame {
     }
 
     private void submit(String input){
-
+        if(line < 6){
+            if(words.contains(input) && !usedWords.contains(input)){
+                usedWords.add(input);
+                List<Character> usedLetters = new ArrayList<>();
+                for(int i = 0; i < input.length(); i++){
+                    Character character = input.charAt(i);
+                    if(character == word.charAt(i)){
+                        insertCharacter(character.toString(), line, i, Color.GREEN);
+                        usedLetters.add(character);
+                    }
+                    else if(word.contains(character.toString())){
+                        if(!usedLetters.contains(character)){
+                            usedLetters.add(character);
+                            insertCharacter(character.toString(), line, i, Color.YELLOW);
+                        }
+                        else if(word.lastIndexOf(character.toString()) != word.indexOf(character.toString())){
+                            insertCharacter(character.toString(), line, i, Color.YELLOW);
+                        }
+                        else{
+                            insertCharacter(character.toString(), line, i, Color.LIGHT_GRAY);
+                        }
+                    }
+                    else{
+                        usedLetters.add(character);
+                        insertCharacter(character.toString(), line, i, Color.LIGHT_GRAY);
+                    }
+                }
+                inputField.setText("");
+                line++;
+            }
+        }
+        else{
+            inputField.setText(word);
+        }
+        inputField.requestFocus();
     }
     //region SetupCode
     private void insertCharacter(String character, int row, int col, Color color){
@@ -74,6 +107,7 @@ public class WordleFrame extends JFrame {
     private void restart(){
         word = newWord();
         inputField.setText("");
+        usedWords = new ArrayList<>();
         line = 0;
         for(int i = 0; i < 6; i++){
             for(int j = 0; j < 5; j++){
@@ -86,17 +120,16 @@ public class WordleFrame extends JFrame {
 
     private String newWord(){
         Random random = new Random();
-        String nextWord = words.get(random.nextInt(words.size()));
-        return nextWord;
+        return words.get(random.nextInt(words.size()));
     }
 
     private void initComponents(){
         this.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         this.setVisible(true);
         this.setLayout(new BorderLayout());
-        wordPanel = new JPanel();
+        JPanel wordPanel = new JPanel();
         wordPanel.setLayout(new GridLayout(6, 5));
-        controlPanel = new JPanel();
+        JPanel controlPanel = new JPanel();
         controlPanel.setLayout(new GridLayout(0,3));
         inputField = new JTextField();
         inputField.setFont(inputField.getFont().deriveFont(72F));
