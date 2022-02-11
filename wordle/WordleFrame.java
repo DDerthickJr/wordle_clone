@@ -127,7 +127,6 @@ public class WordleFrame extends JFrame {
 
     private void restart(){
         word = newWord();
-        System.out.println(word);
         inputField.setText("");
         copyButton.setEnabled(false);
         gameWon = false;
